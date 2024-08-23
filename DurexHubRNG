@@ -60,36 +60,6 @@ local function toggleCrafting(diceType, state)
     end
 end
 
-local isRolling = false
-
--- Function to perform the roll
-local function performRoll()
-    local args = {
-        [1] = "First"
-    }
-    local success, err = pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Rng_Roll"):InvokeServer(unpack(args))
-    end)
-    if not success then
-        warn("Failed to perform roll: " .. tostring(err))
-    end
-end
-
--- Toggle function
-local function toggleRolling(state)
-    isRolling = state
-    if isRolling then
-        while isRolling do
-            performRoll()
-            wait(0.1) -- Adjust the wait time as needed to control rolling speed
-        end
-    end
-end
-
-Section:NewToggle("Auto Roll", "Toggle auto rolling", function(state)
-    toggleRolling(state)
-end)
-
 Section:NewToggle("Auto Craft Lucky Dice II", "Toggle auto crafting of Lucky Dice II", function(state)
     toggleCrafting("Lucky Dice II", state)
 end)
@@ -104,4 +74,31 @@ end)
     
 Section:NewToggle("Auto Craft Mega Lucky Dice II", "Toggle auto crafting of Mega Lucky Dice II", function(state)
     toggleCrafting("Mega Lucky Dice II", state)
+end)
+
+local upgrades = { "RNGEggLuck", "RNGHatchSpeed", "RNGBonusLuck", "RNGExtraEggs" }
+local currentIndex = 1
+
+local function purchaseUpgrade(upgradeType)
+    local args = {
+        [1] = "First",
+        [2] = upgradeType
+    }
+    
+    game:GetService("ReplicatedStorage").Network.Rng_PurchaseUpgrade:InvokeServer(unpack(args))
+end
+
+local function autoUpgrade()
+    while true do
+        purchaseUpgrade(upgrades[currentIndex])
+        wait(1)  -- Adjust the interval for purchasing upgrades
+        
+        currentIndex = currentIndex % #upgrades + 1
+    end
+end
+
+Section:NewToggle("Auto Upgrade RNG", "Toggle auto upgrading", function(state)
+    if state then
+        autoUpgrade()
+    end
 end)
