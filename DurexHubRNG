@@ -20,6 +20,45 @@ local Window = Library.CreateLib("Durex Hub |•Pet Simulator 99", "DarkTheme")
 local Tab = Window:NewTab("Main")
 local Section = Tab:NewSection("Main Features")
 
+local player = game.Players.LocalPlayer
+local userInputService = game:GetService("UserInputService")
+local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+local antiAfkActive = false
+
+local function movePlayerRandomly()
+    if humanoid then
+        local randomPosition = Vector3.new(math.random(-5, 5), 0, math.random(-5, 5))
+        humanoid:Move(randomPosition)
+    end
+end
+
+local function startAntiAfk()
+    antiAfkActive = true
+    while antiAfkActive do
+        movePlayerRandomly()
+        wait(5)  -- Adjust the interval for moving the player (in seconds)
+    end
+end
+
+local function stopAntiAfk()
+    antiAfkActive = false
+end
+
+Section:NewToggle("Enable Anti-AFK", "Toggle anti-AFK feature", function(state)
+    if state then
+        startAntiAfk()
+    else
+        stopAntiAfk()
+    end
+end)
+
+-- Reset AFK timer when any user input is detected
+userInputService.InputBegan:Connect(function(input)
+    if player and antiAfkActive then
+        player:ClearAFK()
+    end
+end)
+
 Section:NewButton("Auto Claim Free Gifts", "ButtonInfo", function()
 while true do
     for giftValue = 1, 12 do
@@ -140,6 +179,34 @@ end
 Section:NewToggle("Auto Upgrade", "Toggle auto upgrading", function(state)
     if state then
         autoUpgrade()
+    end
+end)
+
+local diceName = "Mega Lucky Dice II"
+local numDiceToConsume = 1
+local isConsumingDice = false
+
+local function consumeDice()
+    local args = {
+        [1] = diceName,
+        [2] = numDiceToConsume
+    }
+    
+    game:GetService("ReplicatedStorage").Network.LuckyDice_ConsumeMega:InvokeServer(unpack(args))
+end
+
+Section:NewToggle("Auto Use Mega Dice II", "Toggle auto dice consumption", function(state)
+    if state then
+        isConsumingDice = true
+    else
+        isConsumingDice = false
+    end
+end)
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if isConsumingDice then
+        consumeDice()
+        wait(1)  -- Adjust the interval for consuming dice (in seconds)
     end
 end)
 
