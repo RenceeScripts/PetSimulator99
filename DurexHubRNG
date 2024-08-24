@@ -20,45 +20,6 @@ local Window = Library.CreateLib("Durex Hub |•Pet Simulator 99", "DarkTheme")
 local Tab = Window:NewTab("Main")
 local Section = Tab:NewSection("Main Features")
 
-local player = game.Players.LocalPlayer
-local userInputService = game:GetService("UserInputService")
-local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-local antiAfkActive = false
-
-local function movePlayerRandomly()
-    if humanoid then
-        local randomPosition = Vector3.new(math.random(-5, 5), 0, math.random(-5, 5))
-        humanoid:Move(randomPosition)
-    end
-end
-
-local function startAntiAfk()
-    antiAfkActive = true
-    while antiAfkActive do
-        movePlayerRandomly()
-        wait(5)  -- Adjust the interval for moving the player (in seconds)
-    end
-end
-
-local function stopAntiAfk()
-    antiAfkActive = false
-end
-
-Section:NewToggle("Enable Anti-AFK", "Toggle anti-AFK feature", function(state)
-    if state then
-        startAntiAfk()
-    else
-        stopAntiAfk()
-    end
-end)
-
--- Reset AFK timer when any user input is detected
-userInputService.InputBegan:Connect(function(input)
-    if player and antiAfkActive then
-        player:ClearAFK()
-    end
-end)
-
 Section:NewButton("Auto Claim Free Gifts", "ButtonInfo", function()
 while true do
     for giftValue = 1, 12 do
@@ -71,6 +32,25 @@ while true do
     end
 end
     print("Clicked")
+end)
+
+local VirtualUser = game:GetService("VirtualUser")
+local isAntiAfkActive = false
+
+local function handleAntiAfkToggle(state)
+    isAntiAfkActive = state
+    if isAntiAfkActive then
+        game.Players.LocalPlayer.Idled:Connect(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+        end)
+    else
+        game.Players.LocalPlayer.Idled:Disconnect()
+    end
+end
+
+Section:NewToggle("Enable Anti-AFK", "Toggle anti-AFK feature", function(state)
+    handleAntiAfkToggle(state)
 end)
 
 Section:NewToggle("Clicking Aura", "Toggles Click Aura", function(state)
